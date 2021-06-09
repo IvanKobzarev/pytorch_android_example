@@ -1,0 +1,7 @@
+model/dataset
+model/output
+.gradle
+.idea
+build
+local.properties
+android/application/app/src/main/assets

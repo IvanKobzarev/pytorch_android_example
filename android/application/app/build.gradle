@@ -1,0 +1,61 @@
+apply plugin: 'com.android.application'
+apply plugin: 'kotlin-android'
+
+repositories {
+    flatDir {
+        dirs 'aars'
+    }
+    mavenCentral()
+}
+
+android {
+    compileSdkVersion 30
+    buildToolsVersion "28.0.3"
+
+    defaultConfig {
+        applicationId "org.pytorch.demo.mnist"
+        minSdkVersion 21
+        targetSdkVersion 30
+        versionCode 1
+        versionName "1.0"
+
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+
+    splits {
+        abi {
+            enable true
+            universalApk true
+        }
+    }
+}
+
+dependencies {
+    implementation 'androidx.appcompat:appcompat:1.2.0'
+    implementation 'androidx.constraintlayout:constraintlayout:2.0.4'
+    testImplementation 'junit:junit:4.12'
+    androidTestImplementation 'androidx.test.ext:junit:1.1.2'
+    androidTestImplementation 'androidx.test.espresso:espresso-core:3.3.0'
+
+    //implementation(name:'pytorch_android_quant', ext:'aar')
+    implementation(name:'pytorch_android_fp32', ext:'aar')
+
+
+    // pytorch android transitive deps
+    implementation 'com.facebook.soloader:nativeloader:0.8.0'
+    implementation 'com.facebook.fbjni:fbjni-java-only:0.0.3'
+
+    implementation "androidx.core:core-ktx:+"
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
+}
