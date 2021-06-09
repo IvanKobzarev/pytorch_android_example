@@ -1,11 +1,14 @@
 from __future__ import print_function
 import argparse
+import os
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
 from torchvision import datasets, transforms
 from torch.optim.lr_scheduler import StepLR
+from pathlib import Path
+from torch.utils.mobile_optimizer import optimize_for_mobile
 
 
 class Net(nn.Module):
@@ -87,51 +90,59 @@ def main():
                         help='disables CUDA training')
     parser.add_argument('--dry-run', action='store_true', default=False,
                         help='quickly check a single pass')
+    parser.add_argument('--skip-training', action='store_true', default=False,
+                        help='Skip training: no loading dataset, no training, no testing')
     parser.add_argument('--seed', type=int, default=1, metavar='S',
                         help='random seed (default: 1)')
     parser.add_argument('--log-interval', type=int, default=10, metavar='N',
                         help='how many batches to wait before logging training status')
-    parser.add_argument('--save-model', action='store_true', default=False,
-                        help='For Saving the current Model')
+    parser.add_argument('--save-model-state', type=str, default='output/mnist_state.pt',
+                        help='For saving the model state')
+    parser.add_argument('--save-model-for-mobile', type=str, default='output/mnist.pt',
+                        help='For saving the script model for mobile')
     args = parser.parse_args()
     use_cuda = not args.no_cuda and torch.cuda.is_available()
-
     torch.manual_seed(args.seed)
-
     device = torch.device("cuda" if use_cuda else "cpu")
-
-    train_kwargs = {'batch_size': args.batch_size}
-    test_kwargs = {'batch_size': args.test_batch_size}
-    if use_cuda:
-        cuda_kwargs = {'num_workers': 1,
-                       'pin_memory': True,
-                       'shuffle': True}
-        train_kwargs.update(cuda_kwargs)
-        test_kwargs.update(cuda_kwargs)
-
-    transform=transforms.Compose([
-        transforms.ToTensor(),
-        transforms.Normalize((0.1307,), (0.3081,))
-        ])
-    dataset1 = datasets.MNIST('../dataset', train=True, download=True,
-                       transform=transform)
-    dataset2 = datasets.MNIST('../dataset', train=False,
-                       transform=transform)
-    train_loader = torch.utils.data.DataLoader(dataset1,**train_kwargs)
-    test_loader = torch.utils.data.DataLoader(dataset2, **test_kwargs)
-
     model = Net().to(device)
-    optimizer = optim.Adadelta(model.parameters(), lr=args.lr)
 
-    scheduler = StepLR(optimizer, step_size=1, gamma=args.gamma)
-    for epoch in range(1, args.epochs + 1):
-        train(args, model, device, train_loader, optimizer, epoch)
-        test(model, device, test_loader)
-        scheduler.step()
+    if not args.skip_training:
+        train_kwargs = {'batch_size': args.batch_size}
+        test_kwargs = {'batch_size': args.test_batch_size}
+        if use_cuda:
+            cuda_kwargs = {'num_workers': 1,
+                           'pin_memory': True,
+                           'shuffle': True}
+            train_kwargs.update(cuda_kwargs)
+            test_kwargs.update(cuda_kwargs)
 
-    if args.save_model:
-        torch.save(model.state_dict(), "mnist_state_dict.pt")
+        transform=transforms.Compose([
+            transforms.ToTensor(),
+            transforms.Normalize((0.1307,), (0.3081,))
+            ])
+        dataset1 = datasets.MNIST('../dataset', train=True, download=True,
+                           transform=transform)
+        dataset2 = datasets.MNIST('../dataset', train=False,
+                           transform=transform)
+        train_loader = torch.utils.data.DataLoader(dataset1,**train_kwargs)
+        test_loader = torch.utils.data.DataLoader(dataset2, **test_kwargs)
+        optimizer = optim.Adadelta(model.parameters(), lr=args.lr)
 
+        scheduler = StepLR(optimizer, step_size=1, gamma=args.gamma)
+        for epoch in range(1, args.epochs + 1):
+            train(args, model, device, train_loader, optimizer, epoch)
+            test(model, device, test_loader)
+            scheduler.step()
+
+    script_dir = os.path.dirname(os.path.realpath(__file__))
+    model_state_path = script_dir + '/' + args.save_model_state
+    Path(os.path.dirname(model_state_path)).mkdir(parents=True, exist_ok=True)
+    torch.save(model.state_dict(), model_state_path)
+    model_script = torch.jit.script(model)
+    model_script_opt = optimize_for_mobile(model_script)
+    model_for_mobile_path = script_dir + '/' + args.save_model_for_mobile
+    Path(os.path.dirname(model_for_mobile_path)).mkdir(parents=True, exist_ok=True)
+    torch.jit.save(model_script_opt, model_for_mobile_path)
 
 if __name__ == '__main__':
     main()
