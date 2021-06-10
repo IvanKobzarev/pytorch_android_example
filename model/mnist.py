@@ -181,7 +181,7 @@ def main():
 
     model_quantized = torch.quantization.quantize_dynamic(
         model,
-        {nn.Linear},
+        {nn.Linear, nn.Conv2d},
         dtype=torch.qint8)
 
     save_model(
