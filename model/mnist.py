@@ -9,6 +9,7 @@ from torchvision import datasets, transforms
 from torch.optim.lr_scheduler import StepLR
 from pathlib import Path
 from torch.utils.mobile_optimizer import optimize_for_mobile
+import yaml
 
 
 class Net(nn.Module):
@@ -62,8 +63,8 @@ def test(model, device, test_loader):
         for data, target in test_loader:
             data, target = data.to(device), target.to(device)
             output = model(data)
-            test_loss += F.nll_loss(output, target, reduction='sum').item()  # sum up batch loss
-            pred = output.argmax(dim=1, keepdim=True)  # get the index of the max log-probability
+            test_loss += F.nll_loss(output, target, reduction='sum').item()
+            pred = output.argmax(dim=1, keepdim=True)
             correct += pred.eq(target.view_as(pred)).sum().item()
 
     test_loss /= len(test_loader.dataset)
@@ -71,6 +72,23 @@ def test(model, device, test_loader):
     print('\nTest set: Average loss: {:.4f}, Accuracy: {}/{} ({:.0f}%)\n'.format(
         test_loss, correct, len(test_loader.dataset),
         100. * correct / len(test_loader.dataset)))
+
+
+def save_model(model, model_state_path, model_path, model_ops_yaml_path):
+    script_dir = os.path.dirname(os.path.realpath(__file__))
+    model_state_path = script_dir + '/' + model_state_path
+    Path(os.path.dirname(model_state_path)).mkdir(parents=True, exist_ok=True)
+    torch.save(model.state_dict(), model_state_path)
+    model_script = torch.jit.script(model)
+    model_script_opt = optimize_for_mobile(model_script)
+    model_path = script_dir + '/' + model_path
+    Path(os.path.dirname(model_path)).mkdir(parents=True, exist_ok=True)
+    torch.jit.save(model_script_opt, model_path)
+
+    ops = torch.jit.export_opnames(model_script_opt)
+    model_ops_yaml_path = script_dir + '/' + model_ops_yaml_path
+    with open(model_ops_yaml_path, 'w') as output:
+        yaml.dump(ops, output)
 
 
 def main():
@@ -92,14 +110,30 @@ def main():
                         help='quickly check a single pass')
     parser.add_argument('--skip-training', action='store_true', default=False,
                         help='Skip training: no loading dataset, no training, no testing')
-    parser.add_argument('--seed', type=int, default=1, metavar='S',
+    parser.add_argument('--seed',
+                        type=int, default=1, metavar='S',
                         help='random seed (default: 1)')
-    parser.add_argument('--log-interval', type=int, default=10, metavar='N',
+    parser.add_argument('--log-interval',
+                        type=int, default=10, metavar='N',
                         help='how many batches to wait before logging training status')
-    parser.add_argument('--save-model-state', type=str, default='output/mnist_state.pt',
-                        help='For saving the model state')
-    parser.add_argument('--save-model-for-mobile', type=str, default='output/mnist.pt',
-                        help='For saving the script model for mobile')
+    parser.add_argument('--save-model-state',
+                        type=str, default='output/mnist_state.pt',
+                        help='model state path')
+    parser.add_argument('--save-model',
+                        type=str, default='output/mnist.pt',
+                        help='model path')
+    parser.add_argument('--save-model-ops',
+                        type=str, default='output/mnist_ops.yaml',
+                        help='model ops path')
+    parser.add_argument('--save-quantized-model-state',
+                        type=str, default='output/mnist_quantized_state.pt',
+                        help='quantized model state path')
+    parser.add_argument('--save-quantized-model',
+                        type=str, default='output/mnist_quantized.pt',
+                        help='quantized model path')
+    parser.add_argument('--save-quantized-model-ops',
+                        type=str, default='output/mnist_quantized_ops.yaml',
+                        help='quantized model ops path')
     args = parser.parse_args()
     use_cuda = not args.no_cuda and torch.cuda.is_available()
     torch.manual_seed(args.seed)
@@ -116,15 +150,20 @@ def main():
             train_kwargs.update(cuda_kwargs)
             test_kwargs.update(cuda_kwargs)
 
-        transform=transforms.Compose([
+        transform = transforms.Compose([
             transforms.ToTensor(),
             transforms.Normalize((0.1307,), (0.3081,))
             ])
-        dataset1 = datasets.MNIST('../dataset', train=True, download=True,
-                           transform=transform)
-        dataset2 = datasets.MNIST('../dataset', train=False,
-                           transform=transform)
-        train_loader = torch.utils.data.DataLoader(dataset1,**train_kwargs)
+        dataset1 = datasets.MNIST(
+            '../dataset',
+            train=True,
+            download=True,
+            transform=transform)
+        dataset2 = datasets.MNIST(
+            '../dataset',
+            train=False,
+            transform=transform)
+        train_loader = torch.utils.data.DataLoader(dataset1, **train_kwargs)
         test_loader = torch.utils.data.DataLoader(dataset2, **test_kwargs)
         optimizer = optim.Adadelta(model.parameters(), lr=args.lr)
 
@@ -134,15 +173,23 @@ def main():
             test(model, device, test_loader)
             scheduler.step()
 
-    script_dir = os.path.dirname(os.path.realpath(__file__))
-    model_state_path = script_dir + '/' + args.save_model_state
-    Path(os.path.dirname(model_state_path)).mkdir(parents=True, exist_ok=True)
-    torch.save(model.state_dict(), model_state_path)
-    model_script = torch.jit.script(model)
-    model_script_opt = optimize_for_mobile(model_script)
-    model_for_mobile_path = script_dir + '/' + args.save_model_for_mobile
-    Path(os.path.dirname(model_for_mobile_path)).mkdir(parents=True, exist_ok=True)
-    torch.jit.save(model_script_opt, model_for_mobile_path)
+    save_model(
+        model,
+        args.save_model_state,
+        args.save_model,
+        args.save_model_ops)
+
+    model_quantized = torch.quantization.quantize_dynamic(
+        model,
+        {nn.Linear},
+        dtype=torch.qint8)
+
+    save_model(
+        model_quantized,
+        args.save_quantized_model_state,
+        args.save_quantized_model,
+        args.save_quantized_model_ops)
+
 
 if __name__ == '__main__':
     main()
