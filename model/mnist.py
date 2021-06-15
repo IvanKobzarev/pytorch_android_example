@@ -74,7 +74,12 @@ def test(model, device, test_loader):
         100. * correct / len(test_loader.dataset)))
 
 
-def save_model(model, model_state_path, model_path, model_ops_yaml_path):
+def save_model(
+        model,
+        model_state_path,
+        model_path,
+        model_mobile_path,
+        model_ops_yaml_path):
     script_dir = os.path.dirname(os.path.realpath(__file__))
     model_state_path = script_dir + '/' + model_state_path
     Path(os.path.dirname(model_state_path)).mkdir(parents=True, exist_ok=True)
@@ -84,6 +89,7 @@ def save_model(model, model_state_path, model_path, model_ops_yaml_path):
     model_path = script_dir + '/' + model_path
     Path(os.path.dirname(model_path)).mkdir(parents=True, exist_ok=True)
     torch.jit.save(model_script_opt, model_path)
+    model_script_opt._save_for_lite_interpreter(model_mobile_path)
 
     ops = torch.jit.export_opnames(model_script_opt)
     model_ops_yaml_path = script_dir + '/' + model_ops_yaml_path
@@ -122,6 +128,9 @@ def main():
     parser.add_argument('--save-model',
                         type=str, default='output/mnist.pt',
                         help='model path')
+    parser.add_argument('--save-model-mobile',
+                        type=str, default='output/mnist.ptl',
+                        help='mobile model path')
     parser.add_argument('--save-model-ops',
                         type=str, default='output/mnist_ops.yaml',
                         help='model ops path')
@@ -131,6 +140,9 @@ def main():
     parser.add_argument('--save-quantized-model',
                         type=str, default='output/mnist_quantized.pt',
                         help='quantized model path')
+    parser.add_argument('--save-quantized-model-mobile',
+                        type=str, default='output/mnist_quantized.ptl',
+                        help='mobile quantized model path')
     parser.add_argument('--save-quantized-model-ops',
                         type=str, default='output/mnist_quantized_ops.yaml',
                         help='quantized model ops path')
@@ -177,6 +189,7 @@ def main():
         model,
         args.save_model_state,
         args.save_model,
+        args.save_model_mobile,
         args.save_model_ops)
 
     model_quantized = torch.quantization.quantize_dynamic(
@@ -188,6 +201,7 @@ def main():
         model_quantized,
         args.save_quantized_model_state,
         args.save_quantized_model,
+        args.save_quantized_model_mobile,
         args.save_quantized_model_ops)
 
 

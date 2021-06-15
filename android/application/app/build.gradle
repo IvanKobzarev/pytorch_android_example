@@ -1,9 +1,11 @@
 apply plugin: 'com.android.application'
+apply plugin: 'kotlin-android'
 
 repositories {
     flatDir {
         dirs 'aars'
     }
+    mavenCentral()
 }
 
 android {
@@ -11,7 +13,7 @@ android {
     buildToolsVersion "28.0.3"
 
     defaultConfig {
-        applicationId "org.pytorch.demo.e2e"
+        applicationId "org.pytorch.demo.mnist"
         minSdkVersion 21
         targetSdkVersion 28
         versionCode 1
@@ -39,4 +41,10 @@ dependencies {
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.3.0'
 
     implementation(name:'pytorch_android-release', ext:'aar')
+    // pytorch android transitive deps
+    implementation 'com.facebook.soloader:nativeloader:0.8.0'
+    implementation 'com.facebook.fbjni:fbjni-java-only:0.0.3'
+
+    implementation "androidx.core:core-ktx:+"
+    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
 }

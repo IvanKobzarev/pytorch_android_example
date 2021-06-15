@@ -8,7 +8,7 @@ PYTORCH_ROOT=$ROOT/third_party/pytorch
 echo "PYTORCH_ROOT:$PYTORCH_ROOT"
 
 pushd $PYTORCH_ROOT
-#TODO: Do we need to verify that submodules are init recursive? (Common error)
+#TODO: Do we need to verify that submodules are init recursive? (common error)
 git submodule update --init --recursive
 
 SELECTED_OP_LIST=$ROOT/model/output/mnist_quantized_ops.yaml \
