@@ -1,2 +1,6 @@
 model/dataset
 model/output
+.gradle
+.idea
+build
+local.properties
