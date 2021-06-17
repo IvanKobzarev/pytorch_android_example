@@ -40,7 +40,10 @@ dependencies {
     androidTestImplementation 'androidx.test.ext:junit:1.1.2'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.3.0'
 
-    implementation(name:'pytorch_android-release', ext:'aar')
+    //implementation(name:'pytorch_android_quant', ext:'aar')
+    implementation(name:'pytorch_android_fp32', ext:'aar')
+
+
     // pytorch android transitive deps
     implementation 'com.facebook.soloader:nativeloader:0.8.0'
     implementation 'com.facebook.fbjni:fbjni-java-only:0.0.3'

@@ -16,7 +16,6 @@ import android.util.AttributeSet
 import android.util.Pair
 import android.view.MotionEvent
 import android.view.View
-import java.util.Collections.emptyList
 
 class HandWrittenDigitView : View {
     private var mPath: Path? = null
@@ -25,13 +24,10 @@ class HandWrittenDigitView : View {
 
     private var mCanvas: Canvas? = null
     private var mBitmap: Bitmap? = null
-    private var mAllPoints: MutableList<Pair<Float, Float>> = emptyList()
-    private var mConsecutivePoints: MutableList<Pair<Float, Float>> = emptyList()
+    private var mAllPoints: MutableList<Pair<Float, Float>> = mutableListOf<Pair<Float, Float>>()
+    private var mConsecutivePoints: MutableList<Pair<Float, Float>> = mutableListOf<Pair<Float, Float>>()
 
-    constructor(context: Context, attrs: AttributeSet, defStyle: Int) : super(context, attrs, defStyle) {}
-    constructor(context: Context, attrs: AttributeSet) : this(context, attrs, 0) {}
-
-    private fun setPathPaint() {
+    constructor(context: Context, attrs: AttributeSet, defStyle: Int) : super(context, attrs, defStyle) {
         mPath = Path()
         mPaint = Paint()
         mPaint!!.color = 0xFF000000.toInt()
@@ -41,16 +37,13 @@ class HandWrittenDigitView : View {
         mPaint!!.strokeJoin = Paint.Join.ROUND
         mCanvasPaint = Paint(Paint.DITHER_FLAG)
     }
-
-    override fun onSizeChanged(w: Int, h: Int, oldw: Int, oldh: Int) {
-        super.onSizeChanged(w, h, oldw, oldh);
-        mBitmap = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888)
-        mCanvas = Canvas(mBitmap)
-    }
+    constructor(context: Context, attrs: AttributeSet) : this(context, attrs, 0) {}
 
     override fun onDraw(canvas: Canvas) {
-        canvas.drawBitmap(mBitmap, 0f, 0f, mCanvasPaint)
-        canvas.drawPath(mPath, mPaint)
+        mBitmap?.let {
+            canvas.drawBitmap(it, 0f, 0f, mCanvasPaint)
+            canvas.drawPath(mPath, mPaint)
+        }
     }
 
     override fun onTouchEvent(event: MotionEvent): Boolean {
@@ -83,18 +76,25 @@ class HandWrittenDigitView : View {
         return mAllPoints;
     }
 
-    fun clearAllPointsAndRedraw() {
-        mBitmap = Bitmap.createBitmap(mBitmap!!.width, mBitmap!!.height, Bitmap.Config.ARGB_8888);
+    override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
+        super.onMeasure(widthMeasureSpec, heightMeasureSpec)
+        if (mBitmap == null) {
+            initDrawResources()
+        }
+    }
+
+    private fun initDrawResources() {
+        mBitmap = Bitmap.createBitmap(measuredWidth, measuredHeight, Bitmap.Config.ARGB_8888)
         mCanvas = Canvas(mBitmap)
         mCanvasPaint = Paint(Paint.DITHER_FLAG);
-        mCanvas!!.drawBitmap(mBitmap, 0f, 0f, mCanvasPaint);
+    }
 
-        setPathPaint()
+    fun clearAllPointsAndRedraw() {
+        mCanvas!!.drawColor(Color.TRANSPARENT, PorterDuff.Mode.CLEAR)
+        mAllPoints.clear()
+        mPath!!.reset()
+
         invalidate()
-        mAllPoints.clear()
     }
 
-    fun clearAllPoints() {
-        mAllPoints.clear()
-    }
 }

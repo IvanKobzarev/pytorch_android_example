@@ -19,7 +19,10 @@ import android.widget.Button
 import android.widget.TextView
 
 import androidx.appcompat.app.AppCompatActivity
-import org.pytorch.*
+import org.pytorch.IValue
+import org.pytorch.LiteModuleLoader
+import org.pytorch.Module
+import org.pytorch.Tensor
 import java.io.File
 import java.io.FileOutputStream
 import java.io.InputStream
@@ -75,17 +78,17 @@ class MainActivity : AppCompatActivity(), Runnable {
         mRecognizeButton = findViewById(R.id.recognizeButton)
         mClearButton = findViewById(R.id.clearButton)
 
-        mRecognizeButton?.setOnClickListener {
+        mRecognizeButton!!.setOnClickListener {
             var thread = Thread(this@MainActivity)
             thread.start()
         }
 
-        mClearButton?.setOnClickListener {
-            mResultTextView?.text = ""
-            mDrawView?.clearAllPointsAndRedraw()
+        mClearButton!!.setOnClickListener {
+            mResultTextView!!.text = ""
+            mDrawView!!.clearAllPointsAndRedraw()
         }
 
-        mModule = LiteModuleLoader.load(assetFilePath(this@MainActivity, "mnist_quantized.ptl"))
+        mModule = LiteModuleLoader.load(assetFilePath(this@MainActivity, "mnist.ptl"))
     }
 
     override fun run() {
@@ -94,10 +97,7 @@ class MainActivity : AppCompatActivity(), Runnable {
             return
         }
 
-        runOnUiThread {
-            mResultTextView!!.text = mResultTextView!!.text.toString() + " " + result
-            mDrawView!!.clearAllPoints()
-        }
+        runOnUiThread { mResultTextView!!.text = mResultTextView!!.text.toString() + " " + result }
     }
 
     private fun recognize(): Int {
