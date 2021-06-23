@@ -7,9 +7,15 @@ DOCKER_WORKDIR=/usr/local/pytorch_android_example
 
 id=$(docker run -t -d -w ${DOCKER_WORKDIR} ${DOCKER_IMAGE})
 
-export COMMAND='((sh ./model/build_local_pytorch_for_mnist_fp32.sh) | docker exec -i "$id" bash) 2>&1'
+export COMMAND='bash ./model/build_local_pytorch_for_mnist_fp32.sh 2>&1'
 
-echo ${COMMAND} > ./command.sh && bash ./command.sh
+echo ${COMMAND} > ./command.sh
+
+chmod 755 ./command.sh
+
+docker cp ./command.sh $id:${DOCKER_WORKDIR}
+
+docker exec -i -w ${DOCKER_WORKDIR} ${id} sh "${DOCKER_WORKDIR}/command.sh"
 
 docker cp \
   $id:${DOCKER_WORKDIR}/third_party/pytorch/android/pytorch_android/build/outputs/aar/pytorch_android-release.aar \

@@ -4,10 +4,13 @@ RUN apt-get update
 RUN apt-get -y install python3-pip
 RUN apt-get -y install curl
 RUN apt-get -y install unzip
+RUN apt-get -y install vim
 RUN pip3 install --upgrade pip
 RUN pip install pyyaml
 RUN apt-get install -y git
 RUN apt-get -y install python3.8-dev
+RUN apt-get -y install expect
+RUN apt-get -y install moreutils
 
 RUN DEBIAN_FRONTEND=noninteractive apt-get -y install cmake protobuf-compiler
 RUN ln -s /usr/bin/python3.8 /usr/local/bin/python &&\
