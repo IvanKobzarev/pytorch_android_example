@@ -1,7 +1,7 @@
 #!/bin/bash
 set -ex
 
-DOCKER_IMAGE="pytorch_android_example"
+DOCKER_IMAGE="pytorch_android_example_2"
 ROOT="$( cd "$(dirname "$0")"/.. ; pwd -P)"
 DOCKER_WORKDIR=/usr/local/pytorch_android_example
 

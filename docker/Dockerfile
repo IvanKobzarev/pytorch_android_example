@@ -3,18 +3,40 @@ FROM ubuntu:latest
 RUN apt-get update
 RUN apt-get -y install python3-pip
 RUN apt-get -y install curl
+RUN apt-get -y install wget
 RUN apt-get -y install unzip
-RUN apt-get -y install vim
 RUN pip3 install --upgrade pip
 RUN pip install pyyaml
 RUN apt-get install -y git
 RUN apt-get -y install python3.8-dev
-RUN apt-get -y install expect
 RUN apt-get -y install moreutils
 
 RUN DEBIAN_FRONTEND=noninteractive apt-get -y install cmake protobuf-compiler
 RUN ln -s /usr/bin/python3.8 /usr/local/bin/python &&\
     ln -s /usr/bin/python3.8 /usr/local/bin/python3
+
+# Install OpenJDK
+# https://hub.docker.com/r/picoded/ubuntu-openjdk-8-jdk/dockerfile/
+
+RUN apt-get update && \
+    apt-get install -y openjdk-8-jdk && \
+    apt-get install -y ant && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/* && \
+    rm -rf /var/cache/oracle-jdk8-installer;
+
+# Fix certificate issues, found as of
+# https://bugs.launchpad.net/ubuntu/+source/ca-certificates-java/+bug/983302
+
+RUN apt-get update && \
+    apt-get install -y ca-certificates-java && \
+    apt-get clean && \
+    update-ca-certificates -f && \
+    rm -rf /var/lib/apt/lists/* && \
+    rm -rf /var/cache/oracle-jdk8-installer;
+
+ENV JAVA_HOME /usr/lib/jvm/java-8-openjdk-amd64/
+
 
 ENV ANDROID_NDK /usr/local/android-ndk/
 ENV ANDROID_NDK_VERSION r21d
@@ -29,6 +51,47 @@ RUN mkdir "$ANDROID_NDK" \
     && rm ndk.zip
 
 ENV ANDROID_NDK /usr/local/android-ndk/android-ndk-r21d
+
+ARG cmdline_tools=https://dl.google.com/android/repository/commandlinetools-linux-6609375_latest.zip
+ARG android_home=/opt/android/sdk
+
+
+RUN apt-get update && \
+    apt-get install --yes \
+        xvfb lib32z1 lib32stdc++6 build-essential \
+        libcurl4-openssl-dev libglu1-mesa libxi-dev libxmu-dev \
+        libglu1-mesa-dev && \
+    rm -rf /var/lib/apt/lists/*
+
+
+# Download and install Android Commandline Tools
+RUN mkdir -p ${android_home}/cmdline-tools && \
+    wget -O /tmp/cmdline-tools.zip -t 5 "${cmdline_tools}" && \
+    unzip -q /tmp/cmdline-tools.zip -d ${android_home}/cmdline-tools && \
+    rm /tmp/cmdline-tools.zip
+
+# Set environmental variables
+# deprecated upstream, should be removed in next-gen image
+ENV ANDROID_HOME ${android_home}
+ENV ANDROID_SDK_ROOT ${android_home}
+ENV ADB_INSTALL_TIMEOUT 120
+ENV PATH=${ANDROID_SDK_ROOT}/emulator:${ANDROID_SDK_ROOT}/cmdline-tools/tools/bin:${ANDROID_SDK_ROOT}/tools:${ANDROID_SDK_ROOT}/tools/bin:${ANDROID_SDK_ROOT}/platform-tools:${PATH}
+
+RUN mkdir ~/.android && echo '### User Sources for Android SDK Manager' > ~/.android/repositories.cfg
+
+RUN yes | sdkmanager --licenses && yes | sdkmanager --update
+
+# Update SDK manager and install system image, platform and build tools
+RUN sdkmanager \
+  "tools" \
+  "platform-tools" \
+  "emulator"
+
+RUN sdkmanager \
+  "build-tools;28.0.3" \
+  "build-tools;30.0.3"
+
+RUN sdkmanager "platforms;android-28"
 
 RUN mkdir -p ~/.ssh
 RUN ssh-keyscan -t rsa github.com > ~/.ssh/known_hosts
