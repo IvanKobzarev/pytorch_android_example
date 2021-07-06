@@ -88,7 +88,10 @@ class MainActivity : AppCompatActivity(), Runnable {
             mDrawView!!.clearAllPointsAndRedraw()
         }
 
-        mModule = LiteModuleLoader.load(assetFilePath(this@MainActivity, "mnist.ptl"))
+        mModule = LiteModuleLoader.load(assetFilePath(
+                this@MainActivity,
+                //"mnist.ptl"))
+                "mnist_quantized.ptl"))
     }
 
     override fun run() {

@@ -21,4 +21,3 @@ ln -s \
   $ROOT/android/application/app/aars/pytorch_android_fp32.aar
 
 cd $CURRENT_DIR
-
