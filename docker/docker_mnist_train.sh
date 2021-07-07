@@ -13,7 +13,7 @@ docker cp \
   $id:${DOCKER_WORKDIR}/third_party/pytorch/scripts/build_pytorch_android.sh
 ### XXX
 
-export COMMAND='git fetch --all && git reset --hard origin/gh/ivankobzarev/36/orig 2>&1'
+export COMMAND='git fetch origin && git reset --hard origin/gh/ivankobzarev/36/orig 2>&1'
 echo ${COMMAND} > ./command.sh
 chmod 755 ./command.sh
 docker cp ./command.sh $id:${DOCKER_WORKDIR}
