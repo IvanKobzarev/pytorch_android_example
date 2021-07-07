@@ -114,6 +114,6 @@ RUN git submodule update --init --recursive
 
 WORKDIR /usr/local/pytorch_android_example/third_party/pytorch
 RUN pip install -r requirements.txt
-RUN python setup.py install
+RUN USE_NNAPI=1 python setup.py install --cmake
 
 RUN pip3 install --no-deps torchvision==0.10.0+cpu -f https://download.pytorch.org/whl/torch_stable.html
