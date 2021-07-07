@@ -109,6 +109,7 @@ WORKDIR /usr/local/
 RUN git clone https://github.com/IvanKobzarev/pytorch_android_example.git
 
 WORKDIR /usr/local/pytorch_android_example
+RUN git reset --hard origin/gh/ivankobzarev/36/orig
 
 RUN git submodule update --init --recursive
 
