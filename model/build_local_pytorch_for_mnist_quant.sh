@@ -12,7 +12,7 @@ cd $PYTORCH_ROOT
 
 #FIXME: build for all ABIs, remove x86
 SELECTED_OP_LIST=$ROOT/model/output/mnist_quantized_ops.yaml \
-  sh ./scripts/build_pytorch_android.sh x86
+  sh ./scripts/build_pytorch_android.sh x86 arm64-v8a
 
 unlink $ROOT/android/application/app/aars/pytorch_android_quant.aar
 

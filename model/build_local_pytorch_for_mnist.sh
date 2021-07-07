@@ -12,7 +12,7 @@ pushd $PYTORCH_ROOT
 git submodule update --init --recursive
 
 SELECTED_OP_LIST=$ROOT/model/output/mnist_quantized_ops.yaml \
-  sh ./scripts/build_pytorch_android.sh x86
+  sh ./scripts/build_pytorch_android.sh x86 arm64-v8a
 
 ln -s \
   $ROOT/third_party/pytorch/android/pytorch_android/build/outputs/aar/pytorch_android-release.aar \
