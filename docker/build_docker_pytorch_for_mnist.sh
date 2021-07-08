@@ -38,7 +38,7 @@ done
 cp $ROOT/model/output/mnist.ptl $ROOT/android/application/app/src/main/assets/
 cp $ROOT/model/output/mnist-quant.ptl $ROOT/android/application/app/src/main/assets/
 
-sort <(cat model/output/mnist_quantized_ops.yaml) <(cat  model/output/mnist_ops.yaml) | \
+sort <(cat $ROOT/model/output/mnist-quant-ops.yaml) <(cat  $ROOT/model/output/mnist-ops.yaml) | \
   uniq > $ROOT/model/output/mnist-ops-all.yaml 
 
 ### Build pytorch android for trained model
