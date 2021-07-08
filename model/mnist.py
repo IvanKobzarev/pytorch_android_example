@@ -107,6 +107,7 @@ def save_model(
     model_ops_yaml_path = script_dir + '/' + model_ops_yaml_path
     with open(model_ops_yaml_path, 'w') as output:
         yaml.dump(ops, output)
+    return ops
 
 
 def make_nnapi_model(model):
@@ -224,7 +225,7 @@ def main():
             scheduler.step()
 
     model.eval()
-    save_model(
+    ops = save_model(
         model,
         args.save_model_state,
         args.save_model_non_optimized,
@@ -245,13 +246,18 @@ def main():
         {nn.Linear, nn.Conv2d},
         dtype=torch.qint8)
 
-    save_model(
+    ops_quant = save_model(
         model_quantized,
         args.save_quantized_model_state,
         args.save_quantized_model_non_optimized,
         args.save_quantized_model,
         args.save_quantized_model_mobile,
         args.save_quantized_model_ops)
+
+    ops_all = ops + list(set(ops_quant) + set(ops))
+    script_dir = os.path.dirname(os.path.realpath(__file__))
+    with open(script_dir + "/output/mnist-ops-all.yaml", 'w') as output:
+        yaml.dump(ops_all, output)
 
 
 if __name__ == '__main__':
