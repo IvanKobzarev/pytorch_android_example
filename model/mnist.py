@@ -254,7 +254,7 @@ def main():
         args.save_quantized_model_mobile,
         args.save_quantized_model_ops)
 
-    ops_all = ops + list(set(ops_quant) + set(ops))
+    ops_all = list(set(ops_quant) | set(ops))
     script_dir = os.path.dirname(os.path.realpath(__file__))
     with open(script_dir + "/output/mnist-ops-all.yaml", 'w') as output:
         yaml.dump(ops_all, output)
