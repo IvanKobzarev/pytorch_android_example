@@ -14,6 +14,10 @@ package org.pytorch.demo.mnist
 
 import android.content.Context
 import android.os.Bundle
+import android.os.Handler
+import android.os.HandlerThread
+import android.os.SystemClock
+import android.util.Log
 import android.util.Pair
 import android.widget.Button
 import android.widget.TextView
@@ -29,13 +33,21 @@ import java.io.InputStream
 
 import java.nio.FloatBuffer
 
-class MainActivity : AppCompatActivity(), Runnable {
+class MainActivity : AppCompatActivity() {
 
     private val TAG = "PT-MNIST"
 
-    private var mModule: Module? = null
-    private var mResultTextView: TextView? = null
-    private var mRecognizeButton: Button? = null
+    private var mModuleCPU_fp32: Module? = null
+    private var mModuleCPU_quant: Module? = null
+
+    private var mModuleNNAPI_fp32: Module? = null
+
+    private var mModuleGPU: Module? = null
+
+    private var mTextView: TextView? = null
+    private var mRecognizeCpuFp32Button: Button? = null
+    private var mRecognizeGpuButton: Button? = null
+    private var mRecognizeNnapiFp32Button: Button? = null
     private var mClearButton: Button? = null
     private var mDrawView: HandWrittenDigitView? = null
 
@@ -44,6 +56,9 @@ class MainActivity : AppCompatActivity(), Runnable {
     private val BLANK = -MEAN / STD
     private val NON_BLANK = (1.0f - MEAN) / STD
     private val MNIST_IMAGE_SIZE = 28
+
+    private var mBgThread: HandlerThread? = null
+    private var mBgHandler: Handler? = null
 
     fun assetFilePath(context: Context, asset: String): String? {
         val file = File(context.filesDir, asset)
@@ -64,7 +79,7 @@ class MainActivity : AppCompatActivity(), Runnable {
             outStream.flush()
             return file.absolutePath
         } catch (e: Exception) {
-            android.util.Log.e(TAG, "Error copying asset to file", e)
+            Log.e(TAG, "Error copying asset to file", e)
         }
         return null
     }
@@ -73,40 +88,70 @@ class MainActivity : AppCompatActivity(), Runnable {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        mResultTextView = findViewById(R.id.resultTextView)
-        mDrawView = findViewById(R.id.drawview)
-        mRecognizeButton = findViewById(R.id.recognizeButton)
-        mClearButton = findViewById(R.id.clearButton)
+        mTextView = findViewById(R.id.text)
+        mDrawView = findViewById(R.id.draw)
+        mRecognizeCpuFp32Button = findViewById(R.id.recognize_cpu)
+        mRecognizeGpuButton = findViewById(R.id.recognize_gpu)
+        mRecognizeNnapiFp32Button = findViewById(R.id.recognize_nnapi)
 
-        mRecognizeButton!!.setOnClickListener {
-            var thread = Thread(this@MainActivity)
-            thread.start()
-        }
+        mClearButton = findViewById(R.id.clear)
 
         mClearButton!!.setOnClickListener {
-            mResultTextView!!.text = ""
             mDrawView!!.clearAllPointsAndRedraw()
         }
 
-        mModule = LiteModuleLoader.load(assetFilePath(
-                this@MainActivity,
-                //"mnist.ptl"))
-                "mnist_quantized.ptl"))
-    }
-
-    override fun run() {
-        val result = recognize()
-        if (result == -1) {
-            return
+        mRecognizeCpuFp32Button!!.setOnClickListener {
+            mBgHandler!!.post {
+                val pair = recognize(mModuleCPU_fp32!!)
+                mTextView!!.text = "CPU_fp32 result:$pair.first $pair.second ms" + mTextView!!.text
+            }
         }
 
-        runOnUiThread { mResultTextView!!.text = mResultTextView!!.text.toString() + " " + result }
+        mRecognizeNnapiFp32Button!!.setOnClickListener {
+            mBgHandler!!.post {
+                val pair = recognize(mModuleNNAPI_fp32!!)
+                mTextView!!.text = "NNAPI_fp32 result:$pair.first $pair.second ms" + mTextView!!.text
+            }
+        }
+
+        mModuleCPU_fp32 = LiteModuleLoader.load(assetFilePath(
+                this@MainActivity,
+                "mnist.ptl"))
+
+        mModuleNNAPI_fp32 = LiteModuleLoader.load(assetFilePath(
+                this@MainActivity,
+                "mnist-nnapi.ptl"))
+
+        startBgThread();
     }
 
-    private fun recognize(): Int {
+    override fun onDestroy() {
+        stopBgThread()
+        super.onDestroy()
+    }
+
+    private fun startBgThread() {
+        mBgThread = HandlerThread("bgThread")
+        mBgThread!!.start()
+        mBgHandler = Handler(mBgThread!!.looper)
+    }
+
+    private fun stopBgThread() {
+        mBgThread!!.quitSafely()
+        try {
+            mBgThread!!.join()
+            mBgThread = null
+            mBgHandler = null
+        } catch (e: InterruptedException) {
+            Log.e(TAG, "Error stopping background thread", e);
+        }
+    }
+
+    private fun recognize(module: Module): Pair<Int, Long>? {
+        val startTimeMillis = SystemClock.elapsedRealtime()
         var allPoints: MutableList<Pair<Float, Float>> = mDrawView!!.getAllPoints()
         if (allPoints.size == 0) {
-            return -1
+            return null;
         }
 
         var inputs = FloatArray(MNIST_IMAGE_SIZE * MNIST_IMAGE_SIZE) { _ -> BLANK }
@@ -130,7 +175,7 @@ class MainActivity : AppCompatActivity(), Runnable {
 
         val inTensor = Tensor.fromBlob(inTensorBuffer, longArrayOf(1, 1, 28, 28))
 
-        val outTensor = mModule!!.forward(IValue.from(inTensor)).toTensor()
+        val outTensor = module.forward(IValue.from(inTensor)).toTensor()
         val outputs = outTensor.dataAsFloatArray
 
         var maxScore = -Float.MAX_VALUE
@@ -143,6 +188,7 @@ class MainActivity : AppCompatActivity(), Runnable {
             }
             i++
         }
-        return maxScoreIdx
+        val timeMs = SystemClock.elapsedRealtime() - startTimeMillis
+        return Pair(maxScoreIdx, timeMs)
     }
 }

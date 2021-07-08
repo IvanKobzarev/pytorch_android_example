@@ -30,18 +30,21 @@ docker exec -i -w ${DOCKER_WORKDIR} ${id} sh "${DOCKER_WORKDIR}/command.sh"
 
 docker exec -i -w ${DOCKER_WORKDIR}/model/output ${id} ls
 
-for f in mnist.pt mnist.ptl mnist_ops.yaml mnist_quantized.pt mnist_quantized.ptl mnist_quantized_ops.yaml
+for f in mnist.pt mnist.ptl mnist-ops.yaml mnist-quant.pt mnist-quant.ptl mnist-quant-ops.yaml
 do
   docker cp $id:${DOCKER_WORKDIR}/model/output/$f $ROOT/model/output/
 done
 
 cp $ROOT/model/output/mnist.ptl $ROOT/android/application/app/src/main/assets/
-cp $ROOT/model/output/mnist_quantized.ptl $ROOT/android/application/app/src/main/assets/
+cp $ROOT/model/output/mnist-quant.ptl $ROOT/android/application/app/src/main/assets/
+
+sort <(cat model/output/mnist_quantized_ops.yaml) <(cat  model/output/mnist_ops.yaml) | \
+  uniq > $ROOT/model/output/mnist-ops-all.yaml 
 
 ### Build pytorch android for trained model
 ################################################################################
 
-export COMMAND='bash ./model/build_local_pytorch_for_mnist_fp32.sh 2>&1'
+export COMMAND='bash ./model/build_local_pytorch_for_mnist.sh 2>&1'
 echo ${COMMAND} > ./command.sh
 chmod 755 ./command.sh
 
@@ -53,7 +56,7 @@ docker exec -i -w ${DOCKER_WORKDIR} ${id} sh "${DOCKER_WORKDIR}/command.sh"
 
 docker cp \
   $id:$DOCKER_WORKDIR/third_party/pytorch/android/pytorch_android/build/outputs/aar/pytorch_android-release.aar \
-  $ROOT/android/application/app/aars/pytorch_android_fp32.aar
+  $ROOT/android/application/app/aars/pytorch_android.aar
 
 docker commit $id $DOCKER_IMAGE
 

@@ -154,10 +154,10 @@ def main():
                         type=int, default=10, metavar='N',
                         help='how many batches to wait before logging training status')
     parser.add_argument('--save-model-state',
-                        type=str, default='output/mnist_state.pt',
+                        type=str, default='output/mnist-state.pt',
                         help='model state path')
     parser.add_argument('--save-model-non-optimized',
-                        type=str, default='output/mnist_non_optimized.pt',
+                        type=str, default='output/mnist-nonopt.pt',
                         help='model non optimized path')
     parser.add_argument('--save-model',
                         type=str, default='output/mnist.pt',
@@ -166,22 +166,22 @@ def main():
                         type=str, default='output/mnist.ptl',
                         help='mobile model path')
     parser.add_argument('--save-model-ops',
-                        type=str, default='output/mnist_ops.yaml',
+                        type=str, default='output/mnist-ops.yaml',
                         help='model ops path')
     parser.add_argument('--save-quantized-model-state',
-                        type=str, default='output/mnist_quantized_state.pt',
+                        type=str, default='output/mnist-quant-state.pt',
                         help='quantized model state path')
     parser.add_argument('--save-quantized-model-non-optimized',
-                        type=str, default='output/mnist_quantized_non_optimized.pt',
+                        type=str, default='output/mnist-quant-nonopt.pt',
                         help='quantized model non optimized path')
     parser.add_argument('--save-quantized-model',
-                        type=str, default='output/mnist_quantized.pt',
+                        type=str, default='output/mnist-quant.pt',
                         help='quantized model path')
     parser.add_argument('--save-quantized-model-mobile',
-                        type=str, default='output/mnist_quantized.ptl',
+                        type=str, default='output/mnist-quant.ptl',
                         help='mobile quantized model path')
     parser.add_argument('--save-quantized-model-ops',
-                        type=str, default='output/mnist_quantized_ops.yaml',
+                        type=str, default='output/mnist-quant-ops.yaml',
                         help='quantized model ops path')
     args = parser.parse_args()
     use_cuda = not args.no_cuda and torch.cuda.is_available()
