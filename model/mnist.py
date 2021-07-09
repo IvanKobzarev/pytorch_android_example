@@ -243,16 +243,30 @@ def main():
         args.save_model_mobile,
         args.save_model_ops)
 
+    script_dir = os.path.dirname(os.path.realpath(__file__))
+    # NNAPI
     nnapi_model = make_nnapi_model(model)
     nnapi_model_script = torch.jit.script(nnapi_model)
     nnapi_ops = torch.jit.export_opnames(nnapi_model_script)
-    script_dir = os.path.dirname(os.path.realpath(__file__))
     nnapi_model_path = script_dir + "/output/mnist-nnapi.pt"
     nnapi_model_script.save(nnapi_model_path)
     nnapi_model_mobile_path = script_dir + "/output/mnist-nnapi.ptl"
     nnapi_model._save_for_lite_interpreter(nnapi_model_mobile_path)
     with open(script_dir + "/output/mnist-nnapi-ops.yaml", 'w') as output:
         yaml.dump(nnapi_ops, output)
+    # -NNAPI
+
+    # Vulkan
+    script_model = torch.jit.script(model)
+    vulkan_model = optimize_for_mobile(script_model, backend='Vulkan')
+    vulkan_ops = torch.jit.export_opnames(vulkan_model)
+    vulkan_model_path = script_dir + "/output/mnist-vulkan.pt"
+    vulkan_model.save(vulkan_model_path)
+    vulkan_model_mobile_path = script_dir + "/output/mnist-vulkan.ptl"
+    vulkan_model._save_for_lite_interpreter(vulkan_model_mobile_path)
+    with open(script_dir + "/output/mnist-vulkan-ops.yaml", 'w') as output:
+        yaml.dump(vulkan_ops, output)
+    # -Vulkan
 
     model_quantized = torch.quantization.quantize_dynamic(
         model,
@@ -267,7 +281,7 @@ def main():
         args.save_quantized_model_mobile,
         args.save_quantized_model_ops)
 
-    ops_all = list(set(ops_quant) | set(ops) | set(nnapi_ops))
+    ops_all = list(set(ops_quant) | set(ops) | set(nnapi_ops) | set(vulkan_ops))
     script_dir = os.path.dirname(os.path.realpath(__file__))
     with open(script_dir + "/output/mnist-ops-all.yaml", 'w') as output:
         yaml.dump(ops_all, output)
