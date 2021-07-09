@@ -50,7 +50,6 @@ dependencies {
 
     implementation(name:'pytorch_android', ext:'aar')
 
-
     // pytorch android transitive deps
     implementation 'com.facebook.soloader:nativeloader:0.8.0'
     implementation 'com.facebook.fbjni:fbjni-java-only:0.0.3'

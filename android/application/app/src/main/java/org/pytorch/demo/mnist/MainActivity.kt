@@ -23,6 +23,8 @@ import android.widget.Button
 import android.widget.TextView
 
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.util.component1
+import androidx.core.util.component2
 import org.pytorch.IValue
 import org.pytorch.LiteModuleLoader
 import org.pytorch.Module
@@ -38,11 +40,7 @@ class MainActivity : AppCompatActivity() {
     private val TAG = "PT-MNIST"
 
     private var mModuleCPU_fp32: Module? = null
-    private var mModuleCPU_quant: Module? = null
-
     private var mModuleNNAPI_fp32: Module? = null
-
-    private var mModuleGPU: Module? = null
 
     private var mTextView: TextView? = null
     private var mRecognizeCpuFp32Button: Button? = null
@@ -103,14 +101,20 @@ class MainActivity : AppCompatActivity() {
         mRecognizeCpuFp32Button!!.setOnClickListener {
             mBgHandler!!.post {
                 val pair = recognize(mModuleCPU_fp32!!)
-                mTextView!!.text = "CPU_fp32 result:$pair.first $pair.second ms" + mTextView!!.text
+                val (digit, timeMs) = pair!!
+                runOnUiThread {
+                    mTextView!!.text = "CPU_fp32 result:$digit $timeMs ms\n" + mTextView!!.text
+                }
             }
         }
 
         mRecognizeNnapiFp32Button!!.setOnClickListener {
             mBgHandler!!.post {
                 val pair = recognize(mModuleNNAPI_fp32!!)
-                mTextView!!.text = "NNAPI_fp32 result:$pair.first $pair.second ms" + mTextView!!.text
+                val (digit, timeMs) = pair!!
+                runOnUiThread {
+                    mTextView!!.text = "NNAPI_fp32 result:$digit $timeMs ms\n" + mTextView!!.text
+                }
             }
         }
 
@@ -118,9 +122,9 @@ class MainActivity : AppCompatActivity() {
                 this@MainActivity,
                 "mnist.ptl"))
 
-        mModuleNNAPI_fp32 = LiteModuleLoader.load(assetFilePath(
-                this@MainActivity,
-                "mnist-nnapi.ptl"))
+        //mModuleNNAPI_fp32 = LiteModuleLoader.load(assetFilePath(
+        //        this@MainActivity,
+        //        "mnist-nnapi.ptl"))
 
         startBgThread();
     }
