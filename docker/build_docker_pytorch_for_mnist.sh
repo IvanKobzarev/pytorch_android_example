@@ -44,13 +44,15 @@ docker exec -i -w ${DOCKER_WORKDIR} ${id} sh "${DOCKER_WORKDIR}/command.sh"
 
 docker exec -i -w ${DOCKER_WORKDIR}/model/output ${id} ls
 
-for f in mnist.pt mnist.ptl mnist-ops.yaml mnist-quant.pt mnist-quant.ptl mnist-quant-ops.yaml mnist-ops-all.yaml mnist-nnapi-ops.yaml
+for f in mnist.pt mnist.ptl mnist-ops.yaml mnist-quant.pt mnist-quant.ptl mnist-quant-ops.yaml mnist-ops-all.yaml mnist-nnapi-ops.yaml mnist-vulkan.pt mnist-vulkan.ptl mnist-vulkan-ops.yaml
 do
   docker cp $id:${DOCKER_WORKDIR}/model/output/$f $ROOT/model/output/
 done
 
 cp $ROOT/model/output/mnist.ptl $ROOT/android/application/app/src/main/assets/
 cp $ROOT/model/output/mnist-quant.ptl $ROOT/android/application/app/src/main/assets/
+cp $ROOT/model/output/mnist-nnapi.ptl $ROOT/android/application/app/src/main/assets/
+cp $ROOT/model/output/mnist-vulkan.ptl $ROOT/android/application/app/src/main/assets/
 
 
 ### Build pytorch android for trained model
