@@ -10,6 +10,10 @@ echo "PYTORCH_ROOT:$PYTORCH_ROOT"
 
 cd $PYTORCH_ROOT
 
+echo "***SELECTED_OP_LIST***"
+cat $ROOT/model/output/mnist-ops-all.yaml
+echo "======================"
+
 #FIXME: build for all ABIs, remove x86
 SELECTED_OP_LIST=$ROOT/model/output/mnist-ops-all.yaml \
   sh ./scripts/build_pytorch_android.sh arm64-v8a
