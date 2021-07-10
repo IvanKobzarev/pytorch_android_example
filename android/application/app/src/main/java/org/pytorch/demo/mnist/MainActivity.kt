@@ -25,10 +25,7 @@ import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.util.component1
 import androidx.core.util.component2
-import org.pytorch.IValue
-import org.pytorch.LiteModuleLoader
-import org.pytorch.Module
-import org.pytorch.Tensor
+import org.pytorch.*
 import java.io.File
 import java.io.FileOutputStream
 import java.io.InputStream
@@ -41,6 +38,7 @@ class MainActivity : AppCompatActivity() {
 
     private var mModuleCPU_fp32: Module? = null
     private var mModuleNNAPI_fp32: Module? = null
+    private var mModuleVulkan_fp32: Module? = null
 
     private var mTextView: TextView? = null
     private var mRecognizeCpuFp32Button: Button? = null
@@ -108,6 +106,16 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
+        mRecognizeGpuButton!!.setOnClickListener {
+            mBgHandler!!.post {
+                val pair = recognize(mModuleVulkan_fp32!!)
+                val (digit, timeMs) = pair!!
+                runOnUiThread {
+                    mTextView!!.text = "GPU_fp32 result:$digit $timeMs ms\n" + mTextView!!.text
+                }
+            }
+        }
+
         mRecognizeNnapiFp32Button!!.setOnClickListener {
             mBgHandler!!.post {
                 val pair = recognize(mModuleNNAPI_fp32!!)
@@ -122,9 +130,15 @@ class MainActivity : AppCompatActivity() {
                 this@MainActivity,
                 "mnist.ptl"))
 
-        //mModuleNNAPI_fp32 = LiteModuleLoader.load(assetFilePath(
-        //        this@MainActivity,
-        //        "mnist-nnapi.ptl"))
+        mModuleNNAPI_fp32 = LiteModuleLoader.load(assetFilePath(
+                this@MainActivity,
+                "mnist-nnapi.ptl"))
+
+        mModuleVulkan_fp32 = LiteModuleLoader.load(assetFilePath(
+                this@MainActivity,
+                "mnist-vulkan.ptl"),
+                null /* extraFiles */,
+                Device.VULKAN)
 
         startBgThread();
     }
@@ -177,7 +191,7 @@ class MainActivity : AppCompatActivity() {
             inTensorBuffer.put(f)
         }
 
-        val inTensor = Tensor.fromBlob(inTensorBuffer, longArrayOf(1, 1, 28, 28))
+        val inTensor = Tensor.fromBlob(inTensorBuffer, longArrayOf(1, 1, 28, 28), MemoryFormat.CHANNELS_LAST)
 
         val outTensor = module.forward(IValue.from(inTensor)).toTensor()
         val outputs = outTensor.dataAsFloatArray

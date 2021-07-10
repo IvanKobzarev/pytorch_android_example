@@ -106,6 +106,9 @@ ENV PATH=${gradle_home}/bin/:${PATH}
 RUN mkdir -p ~/.ssh
 RUN ssh-keyscan -t rsa github.com > ~/.ssh/known_hosts
 WORKDIR /usr/local/
+ADD ./install_vulkan_sdk.sh install_vulkan_sdk.sh
+RUN bash ./install_vulkan_sdk.sh
+
 RUN git clone https://github.com/IvanKobzarev/pytorch_android_example.git
 
 WORKDIR /usr/local/pytorch_android_example
@@ -114,6 +117,8 @@ RUN git submodule update --init --recursive
 
 WORKDIR /usr/local/pytorch_android_example/third_party/pytorch
 RUN pip install -r requirements.txt
-RUN USE_NNAPI=1 python setup.py install --cmake
+RUN USE_VULKAN=1 USE_NNAPI=1 python setup.py install --cmake
 
 RUN pip3 install --no-deps torchvision==0.10.0+cpu -f https://download.pytorch.org/whl/torch_stable.html
+
+

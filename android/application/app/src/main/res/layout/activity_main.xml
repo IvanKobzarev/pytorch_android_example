@@ -10,15 +10,14 @@
         android:id="@+id/text"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:maxLines="15"
         android:scrollbars="vertical"
         android:text=""
-        android:textAlignment="center"
+        android:gravity="left"
         android:textColor="@color/colorPrimary"
-        android:textSize="16sp"
-        android:textStyle="bold"
+        android:textSize="14sp"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintBottom_toTopOf="@id/draw"
         app:layout_constraintTop_toTopOf="parent" />
 
     <org.pytorch.demo.mnist.HandWrittenDigitView
@@ -28,7 +27,8 @@
         android:background="#eeeeee"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/text" />
+        app:layout_constraintTop_toBottomOf="@id/text"
+        app:layout_constraintBottom_toTopOf="@id/recognize_cpu"/>
 
     <Button
         android:id="@+id/recognize_cpu"
@@ -37,7 +37,8 @@
         android:text="Recognize CPU fp32"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/draw" />
+        app:layout_constraintTop_toBottomOf="@id/draw"
+        app:layout_constraintBottom_toTopOf="@id/recognize_gpu"/>
 
     <Button
         android:id="@+id/recognize_gpu"
@@ -46,7 +47,8 @@
         android:text="Recognize GPU fp32"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/recognize_cpu" />
+        app:layout_constraintTop_toBottomOf="@id/recognize_cpu"
+        app:layout_constraintBottom_toTopOf="@id/recognize_nnapi"/>
 
     <Button
         android:id="@+id/recognize_nnapi"
@@ -55,7 +57,8 @@
         android:text="Recognize NNAPI fp32"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/recognize_gpu" />
+        app:layout_constraintTop_toBottomOf="@id/recognize_gpu"
+        app:layout_constraintBottom_toTopOf="@id/clear"/>
 
     <Button
         android:id="@+id/clear"
@@ -65,7 +68,7 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toTopOf="@id/recognize_nnapi" />
+        app:layout_constraintTop_toBottomOf="@id/recognize_nnapi" />
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>
