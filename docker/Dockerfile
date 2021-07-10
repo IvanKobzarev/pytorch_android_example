@@ -109,9 +109,11 @@ RUN ssh-keyscan -t rsa github.com > ~/.ssh/known_hosts
 RUN git clone https://github.com/IvanKobzarev/pytorch_android_example.git
 
 WORKDIR /usr/local/pytorch_android_example
+RUN git submodule update --init --recursive
+
 RUN bash ./docker/install_vulkan_sdk.sh
 
-RUN git submodule update --init --recursive
+ENV VULKAN_SDK=/usr/local/vulkansdk
 
 WORKDIR /usr/local/pytorch_android_example/third_party/pytorch
 RUN pip install -r requirements.txt
