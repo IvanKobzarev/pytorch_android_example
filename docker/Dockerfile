@@ -106,6 +106,7 @@ ENV PATH=${gradle_home}/bin/:${PATH}
 RUN mkdir -p ~/.ssh
 RUN ssh-keyscan -t rsa github.com > ~/.ssh/known_hosts
 
+WORKDIR /usr/local
 RUN git clone https://github.com/IvanKobzarev/pytorch_android_example.git
 
 WORKDIR /usr/local/pytorch_android_example
