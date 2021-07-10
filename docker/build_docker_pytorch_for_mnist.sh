@@ -15,6 +15,10 @@ docker cp \
 docker cp \
   $ROOT/pytorch-patches/op_allowlist.h \
   $id:${DOCKER_WORKDIR}/third_party/pytorch/aten/src/ATen/core/op_registration/op_allowlist.h
+
+docker cp \
+  $ROOT/pytorch-patches/vulkan_rewrite.cpp \
+  $id:${DOCKER_WORKDIR}/third_party/pytorch/torch/csrc/jit/passes/vulkan_rewrite.cpp
 ### XXX
 
 export COMMAND='git fetch --all && git reset --hard origin/master 2>&1'

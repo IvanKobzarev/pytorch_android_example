@@ -105,13 +105,11 @@ ENV PATH=${gradle_home}/bin/:${PATH}
 
 RUN mkdir -p ~/.ssh
 RUN ssh-keyscan -t rsa github.com > ~/.ssh/known_hosts
-WORKDIR /usr/local/
-ADD ./install_vulkan_sdk.sh install_vulkan_sdk.sh
-RUN bash ./install_vulkan_sdk.sh
 
 RUN git clone https://github.com/IvanKobzarev/pytorch_android_example.git
 
 WORKDIR /usr/local/pytorch_android_example
+RUN bash ./docker/install_vulkan_sdk.sh
 
 RUN git submodule update --init --recursive
 
