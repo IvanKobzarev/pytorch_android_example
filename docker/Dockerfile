@@ -112,13 +112,18 @@ RUN git clone https://github.com/IvanKobzarev/pytorch_android_example.git
 WORKDIR /usr/local/pytorch_android_example
 RUN git submodule update --init --recursive
 
-RUN bash ./docker/install_vulkan_sdk.sh
-
-ENV VULKAN_SDK=/usr/local/vulkansdk
+### Install Vulkan SDK
+ARG tmp_vulkansdk_targz=/tmp/vulkansdk.tar.gz
+ARG vulkansdk_dir=/usr/local/vulkansdk
+RUN wget --no-verbose --output-document=${tmp_vulkansdk_targz} \
+  "https://sdk.lunarg.com/sdk/download/1.2.182.0/linux/vulkansdk-linux-x86_64-1.2.182.0.tar.gz" && \
+  mkdir -p "${vulkansdk_dir}" && \
+  tar -C "${vulkansdk_dir}" -xzf "${tmp_vulkansdk_targz}" --strip-components 1 && \
+  rm ${tmp_vulkansdk_targz}
 
 WORKDIR /usr/local/pytorch_android_example/third_party/pytorch
 RUN pip install -r requirements.txt
-RUN USE_VULKAN=1 USE_NNAPI=1 python setup.py install --cmake
+RUN VULKAN_SDK=/usr/local/vulkansdk/x86_64 USE_VULKAN=1 USE_NNAPI=1 python setup.py install --cmake
 
 RUN pip3 install --no-deps torchvision==0.10.0+cpu -f https://download.pytorch.org/whl/torch_stable.html
 
