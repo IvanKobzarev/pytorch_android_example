@@ -37,7 +37,9 @@ class Net(nn.Module):
         x = F.relu(x)
         x = self.dropout2(x)
         x = self.fc2(x)
-        output = F.log_softmax(x, dim=1)
+        # Move to log_softmax once it is added to Vulkan backend
+        #output = F.log_softmax(x, dim=1)
+        output = F.softmax(x, dim=1)
         return output
 
 
@@ -138,6 +140,10 @@ def make_nnapi_model(model):
     return nnapi_model
 
 
+MODEL_FP32_STATE_PATH="output/mnist-state.pt"
+MODEL_FP32_PATH="output/mnist.pt"
+MODEL_FP32_MOBILE_PATH="output/mnist.ptl"
+MODEL_FP32_NONOPT_PATH="output/mnist-nonopt.pt"
 
 def main():
     # Training settings
@@ -245,15 +251,15 @@ def main():
 
     script_dir = os.path.dirname(os.path.realpath(__file__))
     # NNAPI
-    nnapi_model = make_nnapi_model(model)
-    nnapi_model_script = torch.jit.script(nnapi_model)
-    nnapi_ops = torch.jit.export_opnames(nnapi_model_script)
-    nnapi_model_path = script_dir + "/output/mnist-nnapi.pt"
-    nnapi_model_script.save(nnapi_model_path)
-    nnapi_model_mobile_path = script_dir + "/output/mnist-nnapi.ptl"
-    nnapi_model._save_for_lite_interpreter(nnapi_model_mobile_path)
-    with open(script_dir + "/output/mnist-nnapi-ops.yaml", 'w') as output:
-        yaml.dump(nnapi_ops, output)
+    #nnapi_model = make_nnapi_model(model)
+    #nnapi_model_script = torch.jit.script(nnapi_model)
+    #nnapi_ops = torch.jit.export_opnames(nnapi_model_script)
+    #nnapi_model_path = script_dir + "/output/mnist-nnapi.pt"
+    #nnapi_model_script.save(nnapi_model_path)
+    #nnapi_model_mobile_path = script_dir + "/output/mnist-nnapi.ptl"
+    #nnapi_model._save_for_lite_interpreter(nnapi_model_mobile_path)
+    #with open(script_dir + "/output/mnist-nnapi-ops.yaml", 'w') as output:
+    #    yaml.dump(nnapi_ops, output)
     # -NNAPI
 
     # Vulkan
