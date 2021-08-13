@@ -13,6 +13,10 @@ docker cp \
   $id:${DOCKER_WORKDIR}/third_party/pytorch/scripts/build_pytorch_android.sh
 
 docker cp \
+  $ROOT/pytorch-patches/unpickler.cpp \
+  $id:${DOCKER_WORKDIR}/third_party/pytorch/torch/csrc/jit/serialization/unpickler.cpp
+
+docker cp \
   $ROOT/pytorch-patches/op_allowlist.h \
   $id:${DOCKER_WORKDIR}/third_party/pytorch/aten/src/ATen/core/op_registration/op_allowlist.h
 ### XXX
@@ -36,7 +40,7 @@ docker cp \
 ### Train model
 ################################################################################
 
-export COMMAND='python model/mnist.py 2>&1'
+export COMMAND='python model/mnist.py --skip-training 2>&1'
 echo ${COMMAND} > ./command.sh
 chmod 755 ./command.sh
 docker cp ./command.sh $id:${DOCKER_WORKDIR}

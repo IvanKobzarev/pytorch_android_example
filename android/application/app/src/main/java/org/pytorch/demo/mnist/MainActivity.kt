@@ -126,13 +126,13 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-        mModuleCPU_fp32 = LiteModuleLoader.load(assetFilePath(
-                this@MainActivity,
-                "mnist.ptl"))
-
-        mModuleNNAPI_fp32 = LiteModuleLoader.load(assetFilePath(
-                this@MainActivity,
-                "mnist-nnapi.ptl"))
+//        mModuleCPU_fp32 = LiteModuleLoader.load(assetFilePath(
+//                this@MainActivity,
+//                "mnist.ptl"))
+//
+//        mModuleNNAPI_fp32 = LiteModuleLoader.load(assetFilePath(
+//                this@MainActivity,
+//                "mnist-nnapi.ptl"))
 
         mModuleVulkan_fp32 = LiteModuleLoader.load(assetFilePath(
                 this@MainActivity,

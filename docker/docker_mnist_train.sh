@@ -11,6 +11,14 @@ id=$(docker run -t -d -w ${DOCKER_WORKDIR} ${DOCKER_IMAGE})
 docker cp \
   $ROOT/pytorch-patches/build_pytorch_android.sh \
   $id:${DOCKER_WORKDIR}/third_party/pytorch/scripts/build_pytorch_android.sh
+
+docker cp \
+  $ROOT/pytorch-patches/unpickler.cpp \
+  $id:${DOCKER_WORKDIR}/third_party/pytorch/torch/csrc/jit/serialization/unpickler.cpp
+
+docker cp \
+  $ROOT/pytorch-patches/op_allowlist.h \
+  $id:${DOCKER_WORKDIR}/third_party/pytorch/aten/src/ATen/core/op_registration/op_allowlist.h
 ### XXX
 
 export COMMAND='git fetch origin && git reset --hard origin/master 2>&1'
