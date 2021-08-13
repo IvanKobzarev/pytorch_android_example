@@ -38,7 +38,7 @@ class Net(nn.Module):
         x = self.dropout2(x)
         x = self.fc2(x)
         # Move to log_softmax once it is added to Vulkan backend
-        #output = F.log_softmax(x, dim=1)
+        # output = F.log_softmax(x, dim=1)
         output = F.softmax(x, dim=1)
         return output
 
@@ -86,21 +86,13 @@ def save_model(
         model_path,
         model_mobile_path,
         model_ops_yaml_path):
-    script_dir = os.path.dirname(os.path.realpath(__file__))
-    model_state_path = script_dir + '/' + model_state_path
-    print(model_state_path)
     Path(os.path.dirname(model_state_path)).mkdir(parents=True, exist_ok=True)
     torch.save(model.state_dict(), model_state_path)
     model_script = torch.jit.script(model)
-    model_non_optimized_path = script_dir + '/' + model_non_optimized_path
     torch.jit.save(model_script, model_non_optimized_path)
     model_script_opt = optimize_for_mobile(model_script)
-    model_path = script_dir + '/' + model_path
-    print(model_path)
     Path(os.path.dirname(model_path)).mkdir(parents=True, exist_ok=True)
     torch.jit.save(model_script_opt, model_path)
-    model_mobile_path = script_dir + '/' + model_mobile_path
-    print(model_mobile_path)
     model_script_opt._save_for_lite_interpreter(model_mobile_path)
 
     ops = torch.jit.export_opnames(model_script_opt)
@@ -116,7 +108,6 @@ def save_model(
     #ops.append('prim::RaiseException')
     #ops.append('aten::__is__')
 
-    model_ops_yaml_path = script_dir + '/' + model_ops_yaml_path
     with open(model_ops_yaml_path, 'w') as output:
         yaml.dump(ops, output)
     return ops
@@ -156,6 +147,8 @@ MODEL_QUANT_OPS_PATH=script_dir + "/output/mnist-quant-ops.yaml"
 MODEL_VULKAN_PATH=script_dir + "/output/mnist-vulkan.pt"
 MODEL_VULKAN_MOBILE_PATH=script_dir + "/output/mnist-vulkan.ptl"
 MODEL_VULKAN_OPS_PATH=script_dir + "/output/mnist-vulkan-ops.yaml"
+
+OPS_ALL_PATH=script_dir + "/output/mnist-ops-all.yaml"
 
 def main():
     # Training settings
@@ -246,7 +239,9 @@ def main():
     # Vulkan
     script_model = torch.jit.script(model)
     vulkan_model = optimize_for_mobile(script_model, backend='Vulkan')
+    print("vulkan_model:", vulkan_model)
     vulkan_ops = torch.jit.export_opnames(vulkan_model)
+    print("vulkan_ops:", vulkan_ops)
     vulkan_model.save(MODEL_VULKAN_PATH)
     vulkan_model._save_for_lite_interpreter(MODEL_VULKAN_MOBILE_PATH)
     with open(MODEL_VULKAN_OPS_PATH, 'w') as output:
@@ -268,7 +263,7 @@ def main():
 
     ops_all = list(set(ops_quant) | set(ops) | set(vulkan_ops)) # | set(nnapi_ops) )
     script_dir = os.path.dirname(os.path.realpath(__file__))
-    with open(script_dir + "/output/mnist-ops-all.yaml", 'w') as output:
+    with open(OPS_ALL_PATH, 'w') as output:
         yaml.dump(ops_all, output)
 
 

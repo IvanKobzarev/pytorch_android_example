@@ -22,7 +22,7 @@ docker exec -i -w ${DOCKER_WORKDIR} ${id} sh "${DOCKER_WORKDIR}/command.sh"
 ### Train model
 ################################################################################
 
-export COMMAND='python model/mnist.py 2>&1'
+export COMMAND='python model/mnist.py --skip-training 2>&1'
 echo ${COMMAND} > ./command.sh
 chmod 755 ./command.sh
 docker cp ./command.sh $id:${DOCKER_WORKDIR}
