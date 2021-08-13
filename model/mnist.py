@@ -5,7 +5,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
-import torch.backends._nnapi.prepare as prepare
+#import torch.backends._nnapi.prepare as prepare
 from torchvision import datasets, transforms
 from torch.optim.lr_scheduler import StepLR
 from pathlib import Path
@@ -39,7 +39,8 @@ class Net(nn.Module):
         x = self.fc2(x)
         # Move to log_softmax once it is added to Vulkan backend
         # output = F.log_softmax(x, dim=1)
-        output = F.softmax(x, dim=1)
+        # output = F.softmax(x, dim=1)
+        output = x
         return output
 
 
@@ -180,6 +181,7 @@ def main():
     torch.manual_seed(args.seed)
     device = torch.device("cuda" if use_cuda else "cpu")
     model = Net().to(device)
+    model(torch.rand(1, 1, 28, 28))
 
     if not args.skip_training:
         train_kwargs = {'batch_size': args.batch_size}
