@@ -140,10 +140,22 @@ def make_nnapi_model(model):
     return nnapi_model
 
 
-MODEL_FP32_STATE_PATH="output/mnist-state.pt"
-MODEL_FP32_PATH="output/mnist.pt"
-MODEL_FP32_MOBILE_PATH="output/mnist.ptl"
-MODEL_FP32_NONOPT_PATH="output/mnist-nonopt.pt"
+script_dir = os.path.dirname(os.path.realpath(__file__))
+MODEL_FP32_STATE_PATH=script_dir + "/output/mnist-state.pt"
+MODEL_FP32_PATH=script_dir + "/output/mnist.pt"
+MODEL_FP32_MOBILE_PATH=script_dir + "/output/mnist.ptl"
+MODEL_FP32_NONOPT_PATH=script_dir + "/output/mnist-nonopt.pt"
+MODEL_FP32_OPS_PATH=script_dir + "/output/mnist-ops.yaml"
+
+MODEL_QUANT_STATE_PATH=script_dir + "/output/mnist-quant-state.pt"
+MODEL_QUANT_PATH=script_dir + "/output/mnist-quant.pt"
+MODEL_QUANT_MOBILE_PATH=script_dir + "/output/mnist-quant.ptl"
+MODEL_QUANT_NONOPT_PATH=script_dir + "/output/mnist-quant-nonopt.pt"
+MODEL_QUANT_OPS_PATH=script_dir + "/output/mnist-quant-ops.yaml"
+
+MODEL_VULKAN_PATH=script_dir + "/output/mnist-vulkan.pt"
+MODEL_VULKAN_MOBILE_PATH=script_dir + "/output/mnist-vulkan.ptl"
+MODEL_VULKAN_OPS_PATH=script_dir + "/output/mnist-vulkan-ops.yaml"
 
 def main():
     # Training settings
@@ -170,36 +182,6 @@ def main():
     parser.add_argument('--log-interval',
                         type=int, default=10, metavar='N',
                         help='how many batches to wait before logging training status')
-    parser.add_argument('--save-model-state',
-                        type=str, default='output/mnist-state.pt',
-                        help='model state path')
-    parser.add_argument('--save-model-non-optimized',
-                        type=str, default='output/mnist-nonopt.pt',
-                        help='model non optimized path')
-    parser.add_argument('--save-model',
-                        type=str, default='output/mnist.pt',
-                        help='model path')
-    parser.add_argument('--save-model-mobile',
-                        type=str, default='output/mnist.ptl',
-                        help='mobile model path')
-    parser.add_argument('--save-model-ops',
-                        type=str, default='output/mnist-ops.yaml',
-                        help='model ops path')
-    parser.add_argument('--save-quantized-model-state',
-                        type=str, default='output/mnist-quant-state.pt',
-                        help='quantized model state path')
-    parser.add_argument('--save-quantized-model-non-optimized',
-                        type=str, default='output/mnist-quant-nonopt.pt',
-                        help='quantized model non optimized path')
-    parser.add_argument('--save-quantized-model',
-                        type=str, default='output/mnist-quant.pt',
-                        help='quantized model path')
-    parser.add_argument('--save-quantized-model-mobile',
-                        type=str, default='output/mnist-quant.ptl',
-                        help='mobile quantized model path')
-    parser.add_argument('--save-quantized-model-ops',
-                        type=str, default='output/mnist-quant-ops.yaml',
-                        help='quantized model ops path')
     args = parser.parse_args()
     use_cuda = not args.no_cuda and torch.cuda.is_available()
     torch.manual_seed(args.seed)
@@ -243,13 +225,12 @@ def main():
     model.eval()
     ops = save_model(
         model,
-        args.save_model_state,
-        args.save_model_non_optimized,
-        args.save_model,
-        args.save_model_mobile,
-        args.save_model_ops)
+        MODEL_FP32_STATE_PATH,
+        MODEL_FP32_NONOPT_PATH,
+        MODEL_FP32_PATH,
+        MODEL_FP32_MOBILE_PATH,
+        MODEL_FP32_OPS_PATH)
 
-    script_dir = os.path.dirname(os.path.realpath(__file__))
     # NNAPI
     #nnapi_model = make_nnapi_model(model)
     #nnapi_model_script = torch.jit.script(nnapi_model)
@@ -266,11 +247,9 @@ def main():
     script_model = torch.jit.script(model)
     vulkan_model = optimize_for_mobile(script_model, backend='Vulkan')
     vulkan_ops = torch.jit.export_opnames(vulkan_model)
-    vulkan_model_path = script_dir + "/output/mnist-vulkan.pt"
-    vulkan_model.save(vulkan_model_path)
-    vulkan_model_mobile_path = script_dir + "/output/mnist-vulkan.ptl"
-    vulkan_model._save_for_lite_interpreter(vulkan_model_mobile_path)
-    with open(script_dir + "/output/mnist-vulkan-ops.yaml", 'w') as output:
+    vulkan_model.save(MODEL_VULKAN_PATH)
+    vulkan_model._save_for_lite_interpreter(MODEL_VULKAN_MOBILE_PATH)
+    with open(MODEL_VULKAN_OPS_PATH, 'w') as output:
         yaml.dump(vulkan_ops, output)
     # -Vulkan
 
@@ -281,13 +260,13 @@ def main():
 
     ops_quant = save_model(
         model_quantized,
-        args.save_quantized_model_state,
-        args.save_quantized_model_non_optimized,
-        args.save_quantized_model,
-        args.save_quantized_model_mobile,
-        args.save_quantized_model_ops)
+        MODEL_QUANT_STATE_PATH,
+        MODEL_QUANT_NONOPT_PATH,
+        MODEL_QUANT_PATH,
+        MODEL_QUANT_MOBILE_PATH,
+        MODEL_QUANT_OPS_PATH)
 
-    ops_all = list(set(ops_quant) | set(ops) | set(nnapi_ops) | set(vulkan_ops))
+    ops_all = list(set(ops_quant) | set(ops) | set(vulkan_ops)) # | set(nnapi_ops) )
     script_dir = os.path.dirname(os.path.realpath(__file__))
     with open(script_dir + "/output/mnist-ops-all.yaml", 'w') as output:
         yaml.dump(ops_all, output)
