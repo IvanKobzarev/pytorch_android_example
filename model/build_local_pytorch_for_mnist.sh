@@ -15,8 +15,9 @@ cat $ROOT/model/output/mnist-ops-all.yaml
 echo "======================"
 
 #FIXME: build for all ABIs, remove x86
+BUILD_LITE_INTERPRETER=0 \
 SELECTED_OP_LIST=$ROOT/model/output/mnist-ops-all.yaml \
-  sh ./scripts/build_pytorch_android.sh x86 arm64-v8a
+  sh ./scripts/build_pytorch_android.sh arm64-v8a
 
 ln -sf \
   $ROOT/third_party/pytorch/android/pytorch_android/build/outputs/aar/pytorch_android-release.aar \

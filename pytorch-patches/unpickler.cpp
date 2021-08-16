@@ -443,7 +443,7 @@ PickleOpCode Unpickler::readInstruction() {
         tensor = at::empty({0}, options).set_(storage);
       }
 
-      if (device.is_cuda() || device.is_xpu() || device.is_vulkan()) {
+      if (device.is_cuda() || device.is_xpu()) {
         tensor = tensor.to(device, tensor.scalar_type());
       } else if (device.type() != DeviceType::CPU) {
         AT_ERROR(

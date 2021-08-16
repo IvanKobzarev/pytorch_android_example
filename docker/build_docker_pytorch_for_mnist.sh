@@ -75,6 +75,7 @@ do
   docker cp $id:${DOCKER_WORKDIR}/model/output/$f $ROOT/model/output/
 done
 cp $ROOT/model/output/mnist-vulkan.ptl $ROOT/android/application/app/src/main/assets/
+cp $ROOT/model/output/mnist-vulkan.pt $ROOT/android/application/app/src/main/assets/
 
 docker cp $id:${DOCKER_WORKDIR}/model/output/mnist-ops-all.yaml $ROOT/model/output/
 
