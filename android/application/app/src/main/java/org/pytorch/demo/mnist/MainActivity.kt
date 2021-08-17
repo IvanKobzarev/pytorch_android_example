@@ -136,12 +136,20 @@ class MainActivity : AppCompatActivity() {
 //        mModuleNNAPI_fp32 = LiteModuleLoader.load(assetFilePath(
 //                this@MainActivity,
 //                "mnist-nnapi.ptl"))
+
     mModuleVulkan_fp32 = LiteModuleLoader.load(assetFilePath(
         this@MainActivity,
         "mnist-vulkan.ptl"),
         null /* extraFiles */,
         Device.VULKAN)
 
+//    mModuleVulkan_fp32 = Module.load(
+//        assetFilePath(
+//            this@MainActivity,
+//            "mnist-vulkan.pt"),
+//        null,
+//        Device.VULKAN
+//    )
     startBgThread();
   }
 

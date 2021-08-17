@@ -23,13 +23,6 @@ docker cp \
   $ROOT/pytorch-patches/op_allowlist.h \
   $id:${DOCKER_WORKDIR}/third_party/pytorch/aten/src/ATen/core/op_registration/op_allowlist.h
 
-docker cp \
-  $ROOT/pytorch-patches/pytorch_jni_jit.cpp \
-  $id:${DOCKER_WORKDIR}/third_party/pytorch/android/pytorch_android/src/main/cpp/pytorch_jni_jit.cpp
-
-docker cp \
-  $ROOT/pytorch-patches/pytorch_jni_lite.cpp \
-  $id:${DOCKER_WORKDIR}/third_party/pytorch/android/pytorch_android/src/main/cpp/pytorch_jni_lite.cpp
 ### XXX
 
 ### Train model
