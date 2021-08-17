@@ -7,19 +7,6 @@ DOCKER_WORKDIR=/usr/local/pytorch_android_example
 
 id=$(docker run -t -d -w ${DOCKER_WORKDIR} ${DOCKER_IMAGE})
 
-### XXX FIXME:
-docker cp \
-  $ROOT/pytorch-patches/build_pytorch_android.sh \
-  $id:${DOCKER_WORKDIR}/third_party/pytorch/scripts/build_pytorch_android.sh
-
-docker cp \
-  $ROOT/pytorch-patches/unpickler.cpp \
-  $id:${DOCKER_WORKDIR}/third_party/pytorch/torch/csrc/jit/serialization/unpickler.cpp
-
-docker cp \
-  $ROOT/pytorch-patches/op_allowlist.h \
-  $id:${DOCKER_WORKDIR}/third_party/pytorch/aten/src/ATen/core/op_registration/op_allowlist.h
-### XXX
 
 export COMMAND='git fetch --all && git reset --hard origin/master 2>&1'
 echo ${COMMAND} > ./command.sh
@@ -35,6 +22,14 @@ docker cp \
 docker cp \
   $ROOT/pytorch-patches/op_allowlist.h \
   $id:${DOCKER_WORKDIR}/third_party/pytorch/aten/src/ATen/core/op_registration/op_allowlist.h
+
+docker cp \
+  $ROOT/pytorch-patches/pytorch_jni_jit.cpp \
+  $id:${DOCKER_WORKDIR}/third_party/pytorch/android/pytorch_android/src/main/cpp/pytorch_jni_jit.cpp
+
+docker cp \
+  $ROOT/pytorch-patches/pytorch_jni_lite.cpp \
+  $id:${DOCKER_WORKDIR}/third_party/pytorch/android/pytorch_android/src/main/cpp/pytorch_jni_lite.cpp
 ### XXX
 
 ### Train model

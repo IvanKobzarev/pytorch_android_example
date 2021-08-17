@@ -26,6 +26,9 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.util.component1
 import androidx.core.util.component2
 import org.pytorch.*
+import org.pytorch.LiteModuleLoader
+import org.pytorch.Module
+import org.pytorch.Device
 import java.io.File
 import java.io.FileOutputStream
 import java.io.InputStream
@@ -133,7 +136,6 @@ class MainActivity : AppCompatActivity() {
 //        mModuleNNAPI_fp32 = LiteModuleLoader.load(assetFilePath(
 //                this@MainActivity,
 //                "mnist-nnapi.ptl"))
-
         mModuleVulkan_fp32 = LiteModuleLoader.load(assetFilePath(
                 this@MainActivity,
                 "mnist-vulkan.ptl"),
