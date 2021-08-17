@@ -58,11 +58,11 @@ done
 cp $ROOT/model/output/mnist-quant.ptl $ROOT/android/application/app/src/main/assets/
 
 # NNAPI
-#for f in mnist-nnapi.pt mnist-nnapi.ptl mnist-nnapi-ops.yaml
-#do
-#  docker cp $id:${DOCKER_WORKDIR}/model/output/$f $ROOT/model/output/
-#done
-#cp $ROOT/model/output/mnist-nnapi.ptl $ROOT/android/application/app/src/main/assets/
+for f in mnist-nnapi.pt mnist-nnapi.ptl mnist-nnapi-ops.yaml
+do
+  docker cp $id:${DOCKER_WORKDIR}/model/output/$f $ROOT/model/output/
+done
+cp $ROOT/model/output/mnist-nnapi.ptl $ROOT/android/application/app/src/main/assets/
 
 # Vulkan
 for f in mnist-vulkan.pt mnist-vulkan.ptl mnist-vulkan-ops.yaml
@@ -70,7 +70,6 @@ do
   docker cp $id:${DOCKER_WORKDIR}/model/output/$f $ROOT/model/output/
 done
 cp $ROOT/model/output/mnist-vulkan.ptl $ROOT/android/application/app/src/main/assets/
-cp $ROOT/model/output/mnist-vulkan.pt $ROOT/android/application/app/src/main/assets/
 
 docker cp $id:${DOCKER_WORKDIR}/model/output/mnist-ops-all.yaml $ROOT/model/output/
 
