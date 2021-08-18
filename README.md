@@ -36,8 +36,11 @@ Application `MNIST` installed.
 
 ## Content
 `docker/Dockerfile` - docker container definition 
+
 `model/mnist.py` - MNIST model definition and training code. Serializes the model and quantized variant of it for `CPU`, `Vulkan` and `NNAPI`. 
+
 `pytorch-patches` - temporary changes in pytorch that will be eliminated after fixing functionality in pytorch master
+
 `sh ./model/build_local_pytorch_for_mnist.sh` - runs build of pytorch android, contains specification of android abis for the build.
 
 
