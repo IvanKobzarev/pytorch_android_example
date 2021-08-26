@@ -11,6 +11,8 @@ RUN pip install Pillow
 RUN apt-get install -y git
 RUN apt-get -y install python3.8-dev
 RUN apt-get -y install moreutils
+RUN sudo apt-get install -y ccache
+RUN sudo apt-get install -y tmux
 
 RUN DEBIAN_FRONTEND=noninteractive apt-get -y install cmake protobuf-compiler
 RUN ln -s /usr/bin/python3.8 /usr/local/bin/python &&\

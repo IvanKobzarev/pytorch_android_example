@@ -150,7 +150,7 @@ class MainActivity : AppCompatActivity() {
 //        null,
 //        Device.VULKAN
 //    )
-    startBgThread();
+    startBgThread()
   }
 
   override fun onDestroy() {
