@@ -148,6 +148,10 @@ MODEL_VULKAN_PATH=script_dir + "/output/mnist-vulkan.pt"
 MODEL_VULKAN_MOBILE_PATH=script_dir + "/output/mnist-vulkan.ptl"
 MODEL_VULKAN_OPS_PATH=script_dir + "/output/mnist-vulkan-ops.yaml"
 
+MODEL_NNAPI_PATH=script_dir + "/output/mnist-nnapi.pt"
+MODEL_NNAPI_MOBILE_PATH=script_dir + "/output/mnist-nnapi.ptl"
+MODEL_NNAPI_OPS_PATH=script_dir + "/output/mnist-nnapi-ops.yaml"
+
 OPS_ALL_PATH=script_dir + "/output/mnist-ops-all.yaml"
 
 def main():
@@ -229,11 +233,9 @@ def main():
     nnapi_model = make_nnapi_model(model)
     nnapi_model_script = torch.jit.script(nnapi_model)
     nnapi_ops = torch.jit.export_opnames(nnapi_model_script)
-    nnapi_model_path = script_dir + "/output/mnist-nnapi.pt"
-    nnapi_model_script.save(nnapi_model_path)
-    nnapi_model_mobile_path = script_dir + "/output/mnist-nnapi.ptl"
-    nnapi_model._save_for_lite_interpreter(nnapi_model_mobile_path)
-    with open(script_dir + "/output/mnist-nnapi-ops.yaml", 'w') as output:
+    nnapi_model_script.save(MODEL_NNAPI_PATH)
+    nnapi_model._save_for_lite_interpreter(MODEL_NNAPI_MOBILE_PATH)
+    with open(MODEL_NNAPI_OPS_PATH, 'w') as output:
         yaml.dump(nnapi_ops, output)
     # -NNAPI
 
@@ -262,7 +264,7 @@ def main():
         MODEL_QUANT_MOBILE_PATH,
         MODEL_QUANT_OPS_PATH)
 
-    ops_all = list(set(ops_quant) | set(ops) | set(vulkan_ops)) # | set(nnapi_ops) )
+    ops_all = list(set(ops_quant) | set(ops) | set(vulkan_ops) | set(nnapi_ops) )
     script_dir = os.path.dirname(os.path.realpath(__file__))
     with open(OPS_ALL_PATH, 'w') as output:
         yaml.dump(ops_all, output)
