@@ -13,18 +13,16 @@
 package org.pytorch.demo.mnist
 
 import android.content.Context
+import android.view.View
 import android.os.Bundle
 import android.os.Handler
 import android.os.HandlerThread
 import android.os.SystemClock
 import android.util.Log
-import android.util.Pair
 import android.widget.Button
 import android.widget.TextView
 
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.util.component1
-import androidx.core.util.component2
 import org.pytorch.*
 import org.pytorch.LiteModuleLoader
 import org.pytorch.Module
@@ -36,15 +34,21 @@ import java.io.InputStream
 import java.nio.FloatBuffer
 
 class MainActivity : AppCompatActivity() {
-
   private val TAG = "PT-MNIST"
 
+  private val TEXT_CPU_FP32 = "CPU_fp32 result:%d %d ms\n"
+  private val TEXT_CPU_QUANT = "CPU_quant result:%d %d ms\n"
+  private val TEXT_GPU_FP32 = "GPU_fp32 result:%d %d ms\n"
+  private val TEXT_NNAPI_FP32 = "NNAPI_fp32 result:%d %d ms\n"
+
   private var mModuleCPU_fp32: Module? = null
+  private var mModuleCPU_quant: Module? = null
   private var mModuleNNAPI_fp32: Module? = null
   private var mModuleVulkan_fp32: Module? = null
 
   private var mTextView: TextView? = null
   private var mRecognizeCpuFp32Button: Button? = null
+  private var mRecognizeCpuQuantButton: Button? = null
   private var mRecognizeGpuButton: Button? = null
   private var mRecognizeNnapiFp32Button: Button? = null
   private var mClearButton: Button? = null
@@ -83,59 +87,45 @@ class MainActivity : AppCompatActivity() {
     return null
   }
 
+  inner class RecognizeClickListener(val module: Module, val textTemplate: String) : View.OnClickListener {
+    override fun onClick(v: View) {
+      mBgHandler!!.post {
+        val (digit, timeMs) = recognize(module!!)!!
+        runOnUiThread {
+          mTextView!!.text = textTemplate.format(digit, timeMs) + mTextView!!.text
+        }
+      }
+    }
+  }
+
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
     setContentView(R.layout.activity_main)
 
     mTextView = findViewById(R.id.text)
     mDrawView = findViewById(R.id.draw)
+
     mRecognizeCpuFp32Button = findViewById(R.id.recognize_cpu)
+    mRecognizeCpuQuantButton = findViewById(R.id.recognize_cpu_quant)
     mRecognizeGpuButton = findViewById(R.id.recognize_gpu)
     mRecognizeNnapiFp32Button = findViewById(R.id.recognize_nnapi)
-
     mClearButton = findViewById(R.id.clear)
 
     mClearButton!!.setOnClickListener {
       mDrawView!!.clearAllPointsAndRedraw()
     }
 
-    mRecognizeCpuFp32Button!!.setOnClickListener {
-      mBgHandler!!.post {
-        val pair = recognize(mModuleCPU_fp32!!)
-          val (digit, timeMs) = pair!!
-        runOnUiThread {
-          mTextView!!.text = "CPU_fp32 result:$digit $timeMs ms\n" + mTextView!!.text
-        }
-      }
-    }
+    mModuleCPU_fp32 = LiteModuleLoader.load(assetFilePath(
+        this@MainActivity,
+        "mnist.ptl"))
 
-    mRecognizeGpuButton!!.setOnClickListener {
-      mBgHandler!!.post {
-        val pair = recognize(mModuleVulkan_fp32!!)
-          val (digit, timeMs) = pair!!
-        runOnUiThread {
-          mTextView!!.text = "GPU_fp32 result:$digit $timeMs ms\n" + mTextView!!.text
-        }
-      }
-    }
+    mModuleCPU_quant = LiteModuleLoader.load(assetFilePath(
+        this@MainActivity,
+        "mnist-quant.ptl"))
 
-    mRecognizeNnapiFp32Button!!.setOnClickListener {
-      mBgHandler!!.post {
-        val pair = recognize(mModuleNNAPI_fp32!!)
-          val (digit, timeMs) = pair!!
-        runOnUiThread {
-          mTextView!!.text = "NNAPI_fp32 result:$digit $timeMs ms\n" + mTextView!!.text
-        }
-      }
-    }
-
-//        mModuleCPU_fp32 = LiteModuleLoader.load(assetFilePath(
-//                this@MainActivity,
-//                "mnist.ptl"))
-//
-//        mModuleNNAPI_fp32 = LiteModuleLoader.load(assetFilePath(
-//                this@MainActivity,
-//                "mnist-nnapi.ptl"))
+    mModuleNNAPI_fp32 = LiteModuleLoader.load(assetFilePath(
+        this@MainActivity,
+        "mnist-nnapi.ptl"))
 
     mModuleVulkan_fp32 = LiteModuleLoader.load(assetFilePath(
         this@MainActivity,
@@ -143,13 +133,11 @@ class MainActivity : AppCompatActivity() {
         null /* extraFiles */,
         Device.VULKAN)
 
-//    mModuleVulkan_fp32 = Module.load(
-//        assetFilePath(
-//            this@MainActivity,
-//            "mnist-vulkan.pt"),
-//        null,
-//        Device.VULKAN
-//    )
+    mRecognizeCpuFp32Button!!.setOnClickListener(RecognizeClickListener(mModuleCPU_fp32!!, TEXT_CPU_FP32))
+    mRecognizeCpuQuantButton!!.setOnClickListener(RecognizeClickListener(mModuleCPU_quant!!, TEXT_CPU_QUANT))
+    mRecognizeGpuButton!!.setOnClickListener(RecognizeClickListener(mModuleVulkan_fp32!!, TEXT_GPU_FP32))
+    mRecognizeNnapiFp32Button!!.setOnClickListener(RecognizeClickListener(mModuleNNAPI_fp32!!, TEXT_NNAPI_FP32))
+
     startBgThread()
   }
 
