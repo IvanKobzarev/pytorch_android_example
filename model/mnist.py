@@ -40,7 +40,6 @@ class Net(nn.Module):
         # Move to log_softmax once it is added to Vulkan backend
         output = F.log_softmax(x, dim=1)
         # output = F.softmax(x, dim=1)
-        output = x
         return output
 
 
