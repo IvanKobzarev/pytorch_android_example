@@ -13,15 +13,11 @@ docker cp \
   $id:${DOCKER_WORKDIR}/third_party/pytorch/scripts/build_pytorch_android.sh
 
 docker cp \
-  $ROOT/pytorch-patches/unpickler.cpp \
-  $id:${DOCKER_WORKDIR}/third_party/pytorch/torch/csrc/jit/serialization/unpickler.cpp
-
-docker cp \
   $ROOT/pytorch-patches/op_allowlist.h \
   $id:${DOCKER_WORKDIR}/third_party/pytorch/aten/src/ATen/core/op_registration/op_allowlist.h
 ### XXX
 
-export COMMAND='git fetch origin && git reset --hard origin/master 2>&1'
+export COMMAND='git fetch origin && git reset --hard origin/master && git clean -xfd 2>&1'
 echo ${COMMAND} > ./command.sh
 chmod 755 ./command.sh
 docker cp ./command.sh $id:${DOCKER_WORKDIR}
@@ -53,11 +49,11 @@ done
 cp $ROOT/model/output/mnist-quant.ptl $ROOT/android/application/app/src/main/assets/
 
 # NNAPI
-#for f in mnist-nnapi.pt mnist-nnapi.ptl mnist-nnapi-ops.yaml
-#do
-#  docker cp $id:${DOCKER_WORKDIR}/model/output/$f $ROOT/model/output/
-#done
-#cp $ROOT/model/output/mnist-nnapi.ptl $ROOT/android/application/app/src/main/assets/
+for f in mnist-nnapi.pt mnist-nnapi.ptl mnist-nnapi-ops.yaml
+do
+  docker cp $id:${DOCKER_WORKDIR}/model/output/$f $ROOT/model/output/
+done
+cp $ROOT/model/output/mnist-nnapi.ptl $ROOT/android/application/app/src/main/assets/
 
 # Vulkan
 for f in mnist-vulkan.pt mnist-vulkan.ptl mnist-vulkan-ops.yaml

@@ -5,7 +5,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
-#import torch.backends._nnapi.prepare as prepare
+import torch.backends._nnapi.prepare as prepare
 from torchvision import datasets, transforms
 from torch.optim.lr_scheduler import StepLR
 from pathlib import Path
@@ -226,15 +226,15 @@ def main():
         MODEL_FP32_OPS_PATH)
 
     # NNAPI
-    #nnapi_model = make_nnapi_model(model)
-    #nnapi_model_script = torch.jit.script(nnapi_model)
-    #nnapi_ops = torch.jit.export_opnames(nnapi_model_script)
-    #nnapi_model_path = script_dir + "/output/mnist-nnapi.pt"
-    #nnapi_model_script.save(nnapi_model_path)
-    #nnapi_model_mobile_path = script_dir + "/output/mnist-nnapi.ptl"
-    #nnapi_model._save_for_lite_interpreter(nnapi_model_mobile_path)
-    #with open(script_dir + "/output/mnist-nnapi-ops.yaml", 'w') as output:
-    #    yaml.dump(nnapi_ops, output)
+    nnapi_model = make_nnapi_model(model)
+    nnapi_model_script = torch.jit.script(nnapi_model)
+    nnapi_ops = torch.jit.export_opnames(nnapi_model_script)
+    nnapi_model_path = script_dir + "/output/mnist-nnapi.pt"
+    nnapi_model_script.save(nnapi_model_path)
+    nnapi_model_mobile_path = script_dir + "/output/mnist-nnapi.ptl"
+    nnapi_model._save_for_lite_interpreter(nnapi_model_mobile_path)
+    with open(script_dir + "/output/mnist-nnapi-ops.yaml", 'w') as output:
+        yaml.dump(nnapi_ops, output)
     # -NNAPI
 
     # Vulkan
