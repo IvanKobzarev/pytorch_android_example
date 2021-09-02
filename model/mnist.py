@@ -38,8 +38,9 @@ class Net(nn.Module):
         x = self.dropout2(x)
         x = self.fc2(x)
         # Move to log_softmax once it is added to Vulkan backend
-        output = F.log_softmax(x, dim=1)
+        # output = F.log_softmax(x, dim=1)
         # output = F.softmax(x, dim=1)
+        output = x
         return output
 
 

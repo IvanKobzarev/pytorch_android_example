@@ -18,7 +18,7 @@ echo "======================"
 USE_VULKAN=1 \
 USE_NNAPI=1 \
 SELECTED_OP_LIST=$ROOT/model/output/mnist-ops-all.yaml \
-  sh ./scripts/build_pytorch_android.sh
+  sh ./scripts/build_pytorch_android.sh arm64-v8a
 
 
 ln -sf \
