@@ -97,17 +97,7 @@ def save_model(
     model_script_opt._save_for_lite_interpreter(model_mobile_path)
 
     ops = torch.jit.export_opnames(model_script_opt)
-    # FIXME: remove it after fix
     ops.append('aten::set_.source_Storage')
-    #ops.append('aten::eq.int')
-    #ops.append('aten::__isnot__')
-    #ops.append('aten::append.t')
-    #ops.append('aten::_set_item.t')
-    #ops.append('prim::unchecked_cast')
-    #ops.append('prim::Uninitialized')
-    #ops.append('aten::len.t')
-    #ops.append('prim::RaiseException')
-    #ops.append('aten::__is__')
 
     with open(model_ops_yaml_path, 'w') as output:
         yaml.dump(ops, output)

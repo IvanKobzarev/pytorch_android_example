@@ -25,8 +25,8 @@ class HandWrittenDigitView : View {
 
   private var mCanvas: Canvas? = null
   private var mBitmap: Bitmap? = null
-  private var mAllPoints: MutableList<Pair<Float, Float>> = mutableListOf<Pair<Float, Float>>()
-  private var mConsecutivePoints: MutableList<Pair<Float, Float>> = mutableListOf<Pair<Float, Float>>()
+  private var mAllPoints: MutableList<Pair<Float, Float>> = mutableListOf()
+  private var mConsecutivePoints: MutableList<Pair<Float, Float>> = mutableListOf()
 
   constructor(context: Context, attrs: AttributeSet, defStyle: Int) : super(context, attrs, defStyle) {
     mPath = Path()
